@@ -1,72 +1,41 @@
-//val code = Toy.test
-//code.length
-//val cl = OwnClassLoader.defineClass("pkg.OwnClass", code)
-//val instance = cl.newInstance
-//val methods = cl.getDeclaredMethods
-
-//Toy.test2
-//val code = Toy.test
-//val cl = OwnClassLoader.defineClass("OwnClass", code)
-//val instance = cl.newInstance()
-//val methods = cl.getDeclaredMethods
-//methods.foreach { m => m.getParameterTypes match {
-//  case Array() =>
-//    println (m.invoke(instance))
-//  case Array(a) if a == classOf[Array[String]] =>
-//    println(m.invoke(instance, Array[String]()))
-//  case s =>
-//    println ("Unknown " + s)
-//}}
-//test.main(Array())
-
+import LensTest._
+import LensTest.Syntax._
 import scalaz._
 import Scalaz._
+//import scalaz.std.list._
+//import scalaz.Applicative._
+import scalaz.Monad._
 
-def fn(a:Int, b: Int) = a + b
-
-val a = fn _ curried 3
-
-val pf: PartialFunction[Int, Boolean] = { case i if i > 0 => i % 2 == 0}
-val lifted = pf.lift
-lifted(1)
-
-val aa = Some(3)
-
-
-def add3(x: Int) = x+3
-
-Monad[Option].lift(add3)
-
-//3.liftM
-
-//add3.liftM
-//
-//val p = for {
-//  a <- 3.some
-//  b <- Monad[Option].liftM .lift(add3 _)(a.some)
-//} yield(b)
-
-
-
-
-
-
-
-
-
-//val add3 = fn.curried(3)
-//
-//
-//3.some
-//Some(3)
-//
-//
-//
-//test3.run
+printTree (exampleTree)
+val aa = mergeTrees(exampleTree, exampleTree2)
+printTree(aa)
+val bb = mergeTrees(aa, exampleTree3)
+printTree(bb)
+(1.some |@| 2.some) {_ + _}
+1.some.map {_ + 1}
+def ff (a: MyTree) : Option[MyTree] = a.some
+1.point[Option]
+def transform(e: MyTree) = {
+  def f (in:MyTree) : MyTree = {
+    if (treeName.get(in) == "There") treeName.set(in, "Poop") else in
+  }
+  descend(f, e)
+}
+val yy = descend((a => treeName.set(a, "poop")), exampleTree)
+printTree(transform(exampleTree))
+val map = Map("There" -> "Three", "Hello" -> "Goodbye")
+val zz = transform2(exampleTree)(map)
+printTree(zz._2)
+val aaa = uberT(exampleTree)(0)
+aaa._1
+printTree(aaa._2)
+val aaaa = uberT2(exampleTree)(0)
+aaaa._1
+printTree(aaaa._2)
 
 
+val zzz = (t1 >>> t2)(exampleTree)(0)
 
-
-
-
+import scalaz.Kleisli
+val zzzz = (Kleisli(t1) >==> t2).run
 
