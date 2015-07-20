@@ -93,21 +93,21 @@ object LensTest {
   }
 
 
-  def descendM[M[_] : Monad, A](f : MyTree => M[MyTree], e: MyTree) : M[MyTree] = e match {
+  def walkM[M[_] : Monad, A](f : MyTree => M[MyTree], e: MyTree) : M[MyTree] = e match {
     case in: MyNode =>
-      f(in).flatMap(n => children.get(n).map(descendM(f, _)).sequence.map(children.set(n, _)))
+      f(in).flatMap(n => children.get(n).map(walkM(f, _)).sequence.map(children.set(n, _)))
     case n: MyLeaf =>
       f(n)
   }
 
-  def descend (f: MyTree => MyTree, e: MyTree) : MyTree = {
+  def walk (f: MyTree => MyTree, e: MyTree) : MyTree = {
     val fn = f andThen(a => a.point[Id])
-    val res : Id[MyTree] = descendM(fn, e)
+    val res : Id[MyTree] = walkM(fn, e)
     res.copoint
   }
 
   def composeTransform(f: MyTree => MyTree, g: MyTree => MyTree) : MyTree => MyTree = {
-    descend (f andThen g, _)
+    walk (f andThen g, _)
   }
 
   def composeTransformM[M[_] : Monad](f: MyTree => M[MyTree], g: MyTree => M[MyTree]) : MyTree => M[MyTree] = {
@@ -139,7 +139,7 @@ object LensTest {
         treeName.set(e, m.getOrElse(name, name))
       }
     }
-    descendM(fn, e)
+    walkM(fn, e)
   }
 
   type RWState2[A] = scalaz.State[Int, A]
@@ -155,7 +155,7 @@ object LensTest {
         newTree
       }
     }
-    descendM(fn, e)
+    walkM(fn, e)
   }
 
   val t1 = (a:MyTree) =>  renameTransform(a, Map("There" -> "Three", "Hello" -> "Goodbye"))
