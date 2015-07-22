@@ -15,7 +15,6 @@ final case class Push(value: Int) extends ForthOperators[Unit]
 final case object Add extends ForthOperators[Unit]
 final case object Mul extends ForthOperators[Unit]
 final case object Dup extends ForthOperators[Unit]
-final case object End extends ForthOperators[Unit]
 
 
 object Forth {
@@ -28,7 +27,6 @@ object Forth {
   def add = Add
   def mul = Mul
   def dup = Dup
-  def end = End
 }
 
 
@@ -56,10 +54,6 @@ object Transforms {
           val a :: tail = stack
           (a :: a :: tail, ())
         })
-      case End =>
-        // This doesn't work as intended there may not
-        // be a way to do this using ~>
-        State((a : Stack) => (a, ()))
     }
   }
 
@@ -75,8 +69,6 @@ object Transforms {
         println("Mul")
       case Dup =>
         println("Dup")
-      case End =>
-        println("End")
     }
   }
 
