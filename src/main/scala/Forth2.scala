@@ -4,7 +4,6 @@ package forth2
  * Created by rob on 12/13/14.
  */
 
-import scalaz.Functor
 import scalaz.Free
 import scalaz.State
 import scalaz.~>
@@ -12,11 +11,11 @@ import scalaz.~>
 
 sealed trait ForthOperators[A]
 
-final case class Push[A](value: Int, o: A) extends ForthOperators[A]
-final case class Add[A](o: A) extends ForthOperators[A]
-final case class Mul[A](o: A) extends ForthOperators[A]
-final case class Dup[A](o: A) extends ForthOperators[A]
-final case class End[A](o: A) extends ForthOperators[A]
+final case class Push(value: Int) extends ForthOperators[Unit]
+final case object Add extends ForthOperators[Unit]
+final case object Mul extends ForthOperators[Unit]
+final case object Dup extends ForthOperators[Unit]
+final case object End extends ForthOperators[Unit]
 
 
 object Forth {
@@ -25,11 +24,11 @@ object Forth {
   import scala.language.implicitConversions
   implicit def liftForth[A](forth: ForthOperators[A]): ForthProg[A] = Free.liftFC(forth)
 
-  def push(value: Int)  = Push(value, ())
-  def add = Add(())
-  def mul = Mul(())
-  def dup = Dup(())
-  def end = End(())
+  def push(value: Int)  = Push(value)
+  def add = Add
+  def mul = Mul
+  def dup = Dup
+  def end = End
 }
 
 
@@ -40,27 +39,27 @@ object Transforms {
 
   def runProgram: ForthOperators ~> StackState = new (ForthOperators ~> StackState) {
     def apply[A](t: ForthOperators[A]) : StackState[A] = t match {
-      case Push(value : Int, cont) =>
-        State((a: Stack) => (value::a, cont))
-      case Add(cont) =>
+      case Push(value : Int) =>
+        State((a: Stack) => ((value::a), ()))
+      case Add =>
         State((stack : Stack) => {
           val a :: b :: tail = stack
-          ((a + b) :: tail, cont)
+          ((a + b) :: tail, ())
         })
-      case Mul(cont) =>
+      case Mul =>
         State((stack : Stack) => {
           val a :: b :: tail = stack
-          ((a * b) :: tail, cont)
+          ((a * b) :: tail, ())
         })
-      case Dup(cont) =>
+      case Dup =>
         State((stack : Stack) => {
           val a :: tail = stack
-          (a :: a :: tail, cont)
+          (a :: a :: tail, ())
         })
-      case End(cont) =>
+      case End =>
         // This doesn't work as intended there may not
         // be a way to do this using ~>
-        State((a : Stack) => (a, cont))
+        State((a : Stack) => (a, ()))
     }
   }
 
@@ -68,21 +67,16 @@ object Transforms {
 
   def printProgram: ForthOperators ~> Id = new (ForthOperators ~> Id) {
     def apply[A](t: ForthOperators[A]): Id[A] = t match {
-      case Push(value: Int, cont) =>
+      case Push(value: Int) =>
         println(s"Push $value")
-        cont
-      case Add(cont) =>
+      case Add =>
         println("Add")
-        cont
-      case Mul(cont) =>
+      case Mul =>
         println("Mul")
-        cont
-      case Dup(cont) =>
+      case Dup =>
         println("Dup")
-        cont
-      case End(cont) =>
+      case End =>
         println("End")
-        cont
     }
   }
 
