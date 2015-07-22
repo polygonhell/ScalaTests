@@ -109,7 +109,11 @@ object test  {
 
     // Using Natural Transformations
     import Transforms.runProgram
-    println(Free.runFC(testProg)(runProgram).exec(List[Int]()))
+
+    def runWithEmptyStack(p: ForthProg[Unit]): List[Int] =
+      Free.runFC(p)(runProgram).exec(Nil)
+
+    println(runWithEmptyStack(testProg))
 
   }
 }
